@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  lh-mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=book
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+    volumes:
+      - /data/mysql
+    ports:
+    - 3306:3306
+    container_name: mysql-db
+  lh-mock-app:
+    image: shaharbm/lh-mock:0.0.2
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - lh-mysql
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://lh-mysql:3306/book?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+    volumes:
+      - /data/spring-boot-app
+    container_name: lh-mock

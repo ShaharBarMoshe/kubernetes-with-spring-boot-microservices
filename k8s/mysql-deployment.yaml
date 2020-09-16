@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lh-mysql
+  labels:
+    app: lh
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: lh
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: lh
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: lh-mysql
+  labels:
+    app: lh
+spec:
+  selector:
+    matchLabels:
+      app: lh
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: lh
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+        - name: "MYSQL_ROOT_PASSWORD"
+          value: "root"
+        - name: "MYSQL_DATABASE"
+          value: "book"
+        - name: "MYSQL_USER"
+          value: "root"
+        - name: "MYSQL_PASSWORD"
+          value: "root"
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim

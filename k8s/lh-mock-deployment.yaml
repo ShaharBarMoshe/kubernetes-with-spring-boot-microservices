@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lh-mock-service
+spec:
+  type: NodePort
+  selector:
+    component: lh-mock
+  ports:
+    - port: 8080
+      nodePort: 31002
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lh-mock-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: lh-mock
+  template:
+    metadata:
+      labels:
+        component: lh-mock
+    spec:
+      containers:
+        - name: lh-mock
+          image: shaharbm/lh-mock:0.0.2
+          ports:
+            - containerPort: 8080
+          env:
+            - name: "MYSQL_HOST"
+              value: lh-mysql
+            - name: "MYSQL_ROOT_PASSWORD"
+              value: "root"
+            - name: "MYSQL_DATABASE"
+              value: "book"
+            - name: "MYSQL_USER"
+              value: "root"
+            - name: "MYSQL_PASSWORD"
+              value: "root"
+            - name: "SPRING_DATASOURCE_URL"
+              value: "jdbc:mysql://lh-mysql:3306/book?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true"
+            
